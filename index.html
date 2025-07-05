@@ -1,0 +1,1419 @@
+                                        <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Last Sync</span>
+                                        <span className="text-sm text-green-600">
+                                            {lastSync.toLocaleTimeString('id-ID')}
+                                        </span>
+                                    </div>
+                                )}
+                                
+                                <div className="flex justify-between items-center">
+                                    <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>App Version</span>
+                                    <span className="text-sm text-blue-600">v1.0.0</span>
+                                </div>
+                                
+                                {unsyncedCount > 0 && (
+                                    <div className="flex justify-between items-center">
+                                        <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Unsynced Data</span>
+                                        <button
+                                            onClick={syncOfflineData}
+                                            className="text-sm text-orange-600 hover:text-orange-700 underline"
+                                        >
+                                            Sync Now ({unsyncedCount})
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Recent Notifications */}
+                        {notifications.length > 0 && (
+                            <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-4 rounded-xl shadow-lg`}>
+                                <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Recent Activity</h3>
+                                <div className="space-y-2 max-h-32 overflow-y-auto">
+                                    {notifications.slice(0, 3).map((notif) => (
+                                        <div
+                                            key={notif.id}
+                                            className={`p-2 rounded-lg text-xs ${
+                                                notif.type === 'success' 
+                                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                                    : notif.type === 'error'
+                                                    ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                                                    : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                                            }`}
+                                        >
+                                            <div className="font-medium">{notif.title}</div>
+                                            <div className="opacity-80">{notif.message}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            // ================================
+            // FORM COMPONENTS
+            // ================================
+            const renderBlok12Form = () => (
+                <div className="space-y-4">
+                    <div className={`${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'} p-4 rounded-xl border ${isDarkMode ? 'border-blue-700' : 'border-blue-200'}`}>
+                        <h3 className={`font-semibold mb-2 flex items-center ${isDarkMode ? 'text-blue-300' : 'text-blue-800'}`}>
+                            <Gauge size={20} className="mr-2" />
+                            📉 Alarm DP: 4.5 inch H₂O
+                        </h3>
+                    </div>
+
+                    {[
+                        { id: 'gt11', name: 'GT 1.1' },
+                        { id: 'gt12', name: 'GT 1.2' },
+                        { id: 'gt13', name: 'GT 1.3' },
+                        { id: 'gt21', name: 'GT 2.1' },
+                        { id: 'gt22', name: 'GT 2.2' },
+                        { id: 'gt23', name: 'GT 2.3' }
+                    ].map((gt) => (
+                        <div key={gt.id} className={`${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-50'} p-4 rounded-xl border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <h4 className={`font-medium mb-3 flex items-center ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                                <Zap size={16} className="mr-2 text-blue-500" />
+                                {gt.name}
+                            </h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <InputField
+                                    label="Beban"
+                                    value={formData[`${gt.id}_beban`]}
+                                    onChange={(val) => handleInputChange(`${gt.id}_beban`, val)}
+                                    type="number"
+                                    placeholder="0"
+                                    unit="MW"
+                                    required
+                                />
+                                <InputField
+                                    label="DP"
+                                    value={formData[`${gt.id}_dp`]}
+                                    onChange={(val) => handleInputChange(`${gt.id}_dp`, val)}
+                                    type="number"
+                                    placeholder="0"
+                                    unit="inch H₂O"
+                                    alarm={{ threshold: 4.5, reverse: false }}
+                                    required
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+
+            const renderBlok3Form = () => (
+                <div className="space-y-4">
+                    <div className={`${isDarkMode ? 'bg-green-900/30' : 'bg-green-50'} p-4 rounded-xl border ${isDarkMode ? 'border-green-700' : 'border-green-200'}`}>
+                        <h3 className={`font-semibold mb-2 flex items-center ${isDarkMode ? 'text-green-300' : 'text-green-800'}`}>
+                            <Gauge size={20} className="mr-2" />
+                            📉 Alarm DP: 1st=37, 2nd=63, IMS=-205
+                        </h3>
+                    </div>
+
+                    {[
+                        { id: 'gt31', name: 'GT 3.1' },
+                        { id: 'gt32', name: 'GT 3.2' }
+                    ].map((gt) => (
+                        <div key={gt.id} className={`${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-50'} p-4 rounded-xl border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <h4 className={`font-medium mb-3 flex items-center ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                                <Zap size={16} className="mr-2 text-green-500" />
+                                {gt.name}
+                            </h4>
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <InputField
+                                        label="Beban"
+                                        value={formData[`${gt.id}_beban`]}
+                                        onChange={(val) => handleInputChange(`${gt.id}_beban`, val)}
+                                        type="number"
+                                        placeholder="0"
+                                        unit="MW"
+                                        required
+                                    />
+                                    <InputField
+                                        label="OH"
+                                        value={formData[`${gt.id}_oh`]}
+                                        onChange={(val) => handleInputChange(`${gt.id}_oh`, val)}
+                                        type="number"
+                                        placeholder="0"
+                                        unit="hari"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <InputField
+                                        label="DP 1st"
+                                        value={formData[`${gt.id}_dp1st`]}
+                                        onChange={(val) => handleInputChange(`${gt.id}_dp1st`, val)}
+                                        type="number"
+                                        placeholder="0"
+                                        alarm={{ threshold: 37, reverse: false }}
+                                        required
+                                    />
+                                    <InputField
+                                        label="DP 2nd"
+                                        value={formData[`${gt.id}_dp2nd`]}
+                                        onChange={(val) => handleInputChange(`${gt.id}_dp2nd`, val)}
+                                        type="number"
+                                        placeholder="0"
+                                        alarm={{ threshold: 63, reverse: false }}
+                                        required
+                                    />
+                                    <InputField
+                                        label="IMS"
+                                        value={formData[`${gt.id}_ims`]}
+                                        onChange={(val) => handleInputChange(`${gt.id}_ims`, val)}
+                                        type="number"
+                                        placeholder="0"
+                                        alarm={{ threshold: -205, reverse: true }}
+                                        required
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <InputField
+                                        label="Hari Op 1st"
+                                        value={formData[`${gt.id}_hari_op_1st`]}
+                                        onChange={(val) => handleInputChange(`${gt.id}_hari_op_1st`, val)}
+                                        type="number"
+                                        placeholder="0"
+                                        unit="hari"
+                                    />
+                                    <InputField
+                                        label="Hari Op 2nd"
+                                        value={formData[`${gt.id}_hari_op_2nd`]}
+                                        onChange={(val) => handleInputChange(`${gt.id}_hari_op_2nd`, val)}
+                                        type="number"
+                                        placeholder="0"
+                                        unit="hari"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+
+            const renderBlok4Form = () => (
+                <div className="space-y-4">
+                    <div className={`${isDarkMode ? 'bg-orange-900/30' : 'bg-orange-50'} p-4 rounded-xl border ${isDarkMode ? 'border-orange-700' : 'border-orange-200'}`}>
+                        <h3 className={`font-semibold mb-2 flex items-center ${isDarkMode ? 'text-orange-300' : 'text-orange-800'}`}>
+                            <Gauge size={20} className="mr-2" />
+                            📉 Alarm DP: 1st=2.94, 2nd=6.86
+                        </h3>
+                    </div>
+
+                    {[
+                        { id: 'gt41', name: 'GT 4.1' },
+                        { id: 'gt42', name: 'GT 4.2' }
+                    ].map((gt) => (
+                        <div key={gt.id} className={`${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-50'} p-4 rounded-xl border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <h4 className={`font-medium mb-3 flex items-center ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                                <Zap size={16} className="mr-2 text-orange-500" />
+                                {gt.name}
+                            </h4>
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <InputField
+                                        label="Beban"
+                                        value={formData[`${gt.id}_beban`]}
+                                        onChange={(val) => handleInputChange(`${gt.id}_beban`, val)}
+                                        type="number"
+                                        placeholder="0"
+                                        unit="MW"
+                                        required
+                                    />
+                                    <InputField
+                                        label="OH"
+                                        value={formData[`${gt.id}_oh`]}
+                                        onChange={(val) => handleInputChange(`${gt.id}_oh`, val)}
+                                        type="number"
+                                        placeholder="0"
+                                        unit="hari"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <InputField
+                                        label="DP 1st"
+                                        value={formData[`${gt.id}_dp1st`]}
+                                        onChange={(val) => handleInputChange(`${gt.id}_dp1st`, val)}
+                                        type="number"
+                                        placeholder="0"
+                                        alarm={{ threshold: 2.94, reverse: false }}
+                                        required
+                                    />
+                                    <InputField
+                                        label="DP 2nd"
+                                        value={formData[`${gt.id}_dp2nd`]}
+                                        onChange={(val) => handleInputChange(`${gt.id}_dp2nd`, val)}
+                                        type="number"
+                                        placeholder="0"
+                                        alarm={{ threshold: 6.86, reverse: false }}
+                                        required
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <InputField
+                                        label="Hari Op 1st"
+                                        value={formData[`${gt.id}_hari_op_1st`]}
+                                        onChange={(val) => handleInputChange(`${gt.id}_hari_op_1st`, val)}
+                                        type="number"
+                                        placeholder="0"
+                                        unit="hari"
+                                    />
+                                    <InputField
+                                        label="Hari Op 2nd"
+                                        value={formData[`${gt.id}_hari_op_2nd`]}
+                                        onChange={(val) => handleInputChange(`${gt.id}_hari_op_2nd`, val)}
+                                        type="number"
+                                        placeholder="0"
+                                        unit="hari"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+
+            const renderFilterForm = () => (
+                <div className="space-y-4">
+                    <div className={`${isDarkMode ? 'bg-purple-900/30' : 'bg-purple-50'} p-4 rounded-xl border ${isDarkMode ? 'border-purple-700' : 'border-purple-200'}`}>
+                        <h3 className={`font-semibold mb-2 flex items-center ${isDarkMode ? 'text-purple-300' : 'text-purple-800'}`}>
+                            <Filter size={20} className="mr-2" />
+                            Data Penggantian Filter
+                        </h3>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div>
+                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Unit GT <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                                value={formData.filter_gt}
+                                onChange={(e) => handleInputChange('filter_gt', e.target.value)}
+                                className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                                    isDarkMode 
+                                        ? 'border-gray-600 bg-gray-700 text-white' 
+                                        : 'border-gray-300 bg-white'
+                                }`}
+                                required
+                            >
+                                <option value="">Pilih Unit GT</option>
+                                <option value="GT 3.1">GT 3.1</option>
+                                <option value="GT 3.2">GT 3.2</option>
+                                <option value="GT 4.1">GT 4.1</option>
+                                <option value="GT 4.2">GT 4.2</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Jenis Filter <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                                value={formData.filter_type}
+                                onChange={(e) => handleInputChange('filter_type', e.target.value)}
+                                className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                                    isDarkMode 
+                                        ? 'border-gray-600 bg-gray-700 text-white' 
+                                        : 'border-gray-300 bg-white'
+                                }`}
+                                required
+                            >
+                                <option value="">Pilih Jenis Filter</option>
+                                <option value="Pre Filter">Pre Filter</option>
+                                <option value="Final Filter">Final Filter</option>
+                            </select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <InputField
+                                label="Jumlah"
+                                value={formData.filter_jumlah}
+                                onChange={(val) => handleInputChange('filter_jumlah', val)}
+                                type="number"
+                                placeholder="0"
+                                unit="pcs"
+                                required
+                            />
+                            <InputField
+                                label="Merk Filter"
+                                value={formData.filter_merk}
+                                onChange={(val) => handleInputChange('filter_merk', val)}
+                                placeholder="MIKROPOR"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Keterangan
+                            </label>
+                            <textarea
+                                value={formData.filter_keterangan}
+                                onChange={(e) => handleInputChange('filter_keterangan', e.target.value)}
+                                placeholder="Keterangan tambahan (opsional)"
+                                rows={3}
+                                className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                                    isDarkMode 
+                                        ? 'border-gray-600 bg-gray-700 text-white' 
+                                        : 'border-gray-300 bg-white'
+                                }`}
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const renderHistoryData = () => (
+                <div className="space-y-4">
+                    <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-green-50'} p-4 rounded-xl border ${isDarkMode ? 'border-gray-700' : 'border-green-200'}`}>
+                        <h3 className={`font-semibold mb-2 flex items-center justify-between ${isDarkMode ? 'text-green-400' : 'text-green-800'}`}>
+                            <div className="flex items-center">
+                                <CheckCircle size={20} className="mr-2" />
+                                Data History ({savedData.length})
+                            </div>
+                            {savedData.filter(item => !item.synced).length > 0 && (
+                                <button
+                                    onClick={syncOfflineData}
+                                    className="text-xs bg-orange-500 text-white px-3 py-1 rounded-lg hover:bg-orange-600"
+                                >
+                                    Sync ({savedData.filter(item => !item.synced).length})
+                                </button>
+                            )}
+                        </h3>
+                    </div>
+
+                    {savedData.length === 0 ? (
+                        <div className={`text-center py-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <Database size={48} className="mx-auto mb-4 opacity-50" />
+                            <p>Belum ada data tersimpan</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3 max-h-80 overflow-y-auto">
+                            {savedData.slice(0, 20).map((entry) => (
+                                <div key={entry.id} className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-4 hover:shadow-lg transition-all relative`}>
+                                    {!entry.synced && (
+                                        <div className="absolute top-2 right-2 w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
+                                    )}
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className={`font-medium capitalize ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                                            {entry.tab === 'filter' ? 'Penggantian Filter' : `Data Entry ${entry.tab.replace('blok', 'Blok ')}`}
+                                        </span>
+                                        <div className="flex items-center space-x-2">
+                                            {entry.synced ? (
+                                                <CheckCircle size={12} className="text-green-500" />
+                                            ) : (
+                                                <Clock size={12} className="text-orange-500" />
+                                            )}
+                                            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                {new Date(entry.timestamp).toLocaleString('id-ID')}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                        📅 {new Date(entry.data.date || entry.data.filter_tanggal).toLocaleDateString('id-ID')}
+                                        {entry.tab === 'filter' && (
+                                            <span className="ml-4">
+                                                🌀 {entry.data.filter_gt} - {entry.data.filter_type}
+                                            </span>
+                                        )}
+                                        {!entry.synced && (
+                                            <span className="ml-4 text-orange-600 text-xs">● Pending sync</span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+
+            // ================================
+            // MAIN RENDER
+            // ================================
+            return (
+                <div className={`min-h-screen transition-all duration-300 ${
+                    isDarkMode 
+                        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
+                        : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
+                } p-4`}>
+                    <div className="max-w-md mx-auto">
+                        <div className={`${isDarkMode ? 'bg-gray-900/80 backdrop-blur-xl border-gray-700' : 'bg-white/80 backdrop-blur-xl border-white/20'} border rounded-3xl shadow-2xl overflow-hidden`}>
+                            {/* Header */}
+                            <div className={`${
+                                isDarkMode 
+                                    ? 'bg-gradient-to-r from-gray-800 to-gray-700' 
+                                    : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600'
+                            } p-6 text-white relative overflow-hidden`}>
+                                <div className="absolute inset-0 bg-black/10"></div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                                                <Database size={28} />
+                                            </div>
+                                            <div>
+                                                <h1 className="text-xl font-bold">PLTGU Priok</h1>
+                                                <p className="text-blue-100 text-sm">Integrated Dashboard</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setIsDarkMode(!isDarkMode)}
+                                            className="p-2 bg-white/20 rounded-xl backdrop-blur-sm hover:bg-white/30 transition-all"
+                                        >
+                                            {isDarkMode ? '☀️' : '🌙'}
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="flex items-center justify-between">
+                                        <ConnectionStatus />
+                                        {isLoading && (
+                                            <div className="flex items-center space-x-2 text-sm">
+                                                <div className="loading-spinner border-white border-t-transparent"></div>
+                                                <span>Syncing...</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Tab Navigation */}
+                            <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-gray-50/50'}`}>
+                                <div className="grid grid-cols-5 gap-2">
+                                    {[
+                                        { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+                                        { id: 'blok12', label: 'Blok 12', icon: Zap },
+                                        { id: 'blok3', label: 'Blok 3', icon: Zap },
+                                        { id: 'blok4', label: 'Blok 4', icon: Zap },
+                                        { id: 'filter', label: 'Filter', icon: Filter }
+                                    ].map(tab => (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className={`flex flex-col items-center p-3 rounded-xl transition-all relative ${
+                                                activeTab === tab.id
+                                                    ? isDarkMode 
+                                                        ? 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg' 
+                                                        : 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg'
+                                                    : isDarkMode
+                                                        ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                                                        : 'bg-white text-gray-600 hover:bg-gray-50 shadow-md'
+                                            }`}
+                                        >
+                                            <tab.icon size={20} className="mb-1" />
+                                            <span className="text-xs font-medium">{tab.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                
+                                {/* History tab di baris kedua */}
+                                <div className="mt-2">
+                                    <button
+                                        onClick={() => setActiveTab('history')}
+                                        className={`w-full flex items-center justify-center p-3 rounded-xl transition-all relative ${
+                                            activeTab === 'history'
+                                                ? isDarkMode 
+                                                    ? 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg' 
+                                                    : 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg'
+                                                : isDarkMode
+                                                    ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                                                    : 'bg-white text-gray-600 hover:bg-gray-50 shadow-md'
+                                        }`}
+                                    >
+                                        <Database size={20} className="mr-2" />
+                                        <span className="text-sm font-medium">Data History ({savedData.length})</span>
+                                        {savedData.filter(item => !item.synced).length > 0 && (
+                                            <span className="ml-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                                {savedData.filter(item => !item.synced).length}
+                                            </span>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Date & Time Header */}
+                            {activeTab !== 'history' && activeTab !== 'dashboard' && (
+                                <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-800/30' : 'border-gray-200 bg-gray-50/30'}`}>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                <Calendar size={16} className="inline mr-1" />
+                                                Tanggal
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={activeTab === 'filter' ? formData.filter_tanggal : formData.date}
+                                                onChange={(e) => 
+                                                    activeTab === 'filter' 
+                                                        ? handleInputChange('filter_tanggal', e.target.value)
+                                                        : handleInputChange('date', e.target.value)
+                                                }
+                                                className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                                                    isDarkMode 
+                                                        ? 'border-gray-600 bg-gray-700 text-white' 
+                                                        : 'border-gray-300 bg-white'
+                                                }`}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                <Clock size={16} className="inline mr-1" />
+                                                Waktu
+                                            </label>
+                                            <input
+                                                type="time"
+                                                value={formData.time}
+                                                onChange={(e) => handleInputChange('time', e.target.value)}
+                                                className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                                                    isDarkMode 
+                                                        ? 'border-gray-600 bg-gray-700 text-white' 
+                                                        : 'border-gray-300 bg-white'
+                                                }`}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Form Content */}
+                            <div className="p-6 max-h-96 overflow-y-auto">
+                                {activeTab === 'dashboard' && <DashboardView />}
+                                {activeTab === 'blok12' && renderBlok12Form()}
+                                {activeTab === 'blok3' && renderBlok3Form()}
+                                {activeTab === 'blok4' && renderBlok4Form()}
+                                {activeTab === 'filter' && renderFilterForm()}
+                                {activeTab === 'history' && renderHistoryData()}
+                            </div>
+
+                            {/* Action Buttons */}
+                            {activeTab !== 'history' && activeTab !== 'dashboard' && (
+                                <div className={`p-6 border-t space-y-3 ${isDarkMode ? 'border-gray-700 bg-gray-800/30' : 'border-gray-200 bg-gray-50/30'}`}>
+                                    <LoadingButton
+                                        onClick={saveData}
+                                        loading={isLoading}
+                                        className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium py-3 px-4 rounded-xl transition-all transform hover:scale-105 hover:shadow-lg"
+                                        disabled={!isOnline}
+                                    >
+                                        <Plus size={20} />
+                                        <span>{isOnline ? 'Simpan ke Google Sheets' : 'Simpan Offline'}</span>
+                                    </LoadingButton>
+                                    
+                                    <LoadingButton
+                                        onClick={saveAndShare}
+                                        loading={isLoading}
+                                        className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium py-3 px-4 rounded-xl transition-all transform hover:scale-105 hover:shadow-lg"
+                                    >
+                                        <Share2 size={20} />
+                                        <span>Simpan & Share WhatsApp</span>
+                                    </LoadingButton>
+                                    
+                                    {!isOnline && (
+                                        <div className="text-center">
+                                            <p className="text-xs text-orange-600 mb-2">
+                                                📶 Mode Offline - Data akan sync otomatis saat online
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Notification Toast */}
+                            {notifications.length > 0 && (
+                                <div className="fixed top-4 right-4 z-50 space-y-2">
+                                    {notifications.slice(0, 3).map((notif) => (
+                                        <div
+                                            key={notif.id}
+                                            className={`p-4 rounded-xl shadow-2xl backdrop-blur-sm animate-slideIn max-w-sm ${
+                                                notif.type === 'success' 
+                                                    ? 'bg-green-500/90 text-white'
+                                                    : notif.type === 'error'
+                                                    ? 'bg-red-500/90 text-white'
+                                                    : 'bg-yellow-500/90 text-white'
+                                            }`}
+                                        >
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                    <div className="font-semibold text-sm">{notif.title}</div>
+                                                    <div className="text-sm opacity-90">{notif.message}</div>
+                                                </div>
+                                                <button
+                                                    onClick={() => setNotifications(prev => prev.filter(n => n.id !== notif.id))}
+                                                    className="text-white/80 hover:text-white ml-2"
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render aplikasi
+        ReactDOM.render(<DataEntryApp />, document.getElementById('root'));
+    </script>
+
+    <!-- Service Worker untuk PWA (Optional) -->
+    <script>
+        // Register Service Worker untuk offline capability
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>                // Blok 12 fields
+                gt11_beban: '', gt11_dp: '', gt11_status: 'Operasi',
+                gt12_beban: '', gt12_dp: '', gt12_status: 'Operasi',
+                gt13_beban: '', gt13_dp: '', gt13_status: 'Operasi',
+                gt21_beban: '', gt21_dp: '', gt21_status: 'Operasi',
+                gt22_beban: '', gt22_dp: '', gt22_status: 'Operasi',
+                gt23_beban: '', gt23_dp: '', gt23_status: 'Operasi',
+                
+                // Blok 3 fields
+                gt31_beban: '', gt31_dp1st: '', gt31_dp2nd: '', gt31_ims: '', gt31_oh: '',
+                gt31_hari_op_1st: '', gt31_hari_op_2nd: '', gt31_hari_pasang_1st: '', gt31_hari_pasang_2nd: '',
+                gt32_beban: '', gt32_dp1st: '', gt32_dp2nd: '', gt32_ims: '', gt32_oh: '',
+                gt32_hari_op_1st: '', gt32_hari_op_2nd: '', gt32_hari_pasang_1st: '', gt32_hari_pasang_2nd: '',
+                
+                // Blok 4 fields
+                gt41_beban: '', gt41_dp1st: '', gt41_dp2nd: '', gt41_oh: '',
+                gt41_hari_op_1st: '', gt41_hari_op_2nd: '', gt41_hari_pasang_1st: '', gt41_hari_pasang_2nd: '',
+                gt42_beban: '', gt42_dp1st: '', gt42_dp2nd: '', gt42_oh: '',
+                gt42_hari_op_1st: '', gt42_hari_op_2nd: '', gt42_hari_pasang_1st: '', gt42_hari_pasang_2nd: '',
+                
+                // Filter replacement fields
+                filter_gt: '', filter_type: '', filter_tanggal: new Date().toISOString().split('T')[0],
+                filter_jumlah: '', filter_merk: '', filter_keterangan: ''
+            });
+
+            const [savedData, setSavedData] = useState([]);
+            const [chartData, setChartData] = useState([]);
+
+            // ================================
+            // NETWORK & SYNC MONITORING
+            // ================================
+            useEffect(() => {
+                const handleOnline = () => {
+                    setIsOnline(true);
+                    showNotification('success', 'Koneksi Tersambung', 'Aplikasi online kembali');
+                };
+                
+                const handleOffline = () => {
+                    setIsOnline(false);
+                    showNotification('warning', 'Koneksi Terputus', 'Aplikasi dalam mode offline');
+                };
+
+                window.addEventListener('online', handleOnline);
+                window.addEventListener('offline', handleOffline);
+
+                return () => {
+                    window.removeEventListener('online', handleOnline);
+                    window.removeEventListener('offline', handleOffline);
+                };
+            }, []);
+
+            // ================================
+            // GOOGLE SHEETS INTEGRATION
+            // ================================
+            const sendToGoogleSheets = async (data, sendWA = false) => {
+                setIsLoading(true);
+                
+                try {
+                    if (!isOnline) {
+                        throw new Error('Tidak ada koneksi internet');
+                    }
+
+                    const payload = {
+                        tab: activeTab,
+                        formData: data,
+                        sendWhatsApp: sendWA,
+                        whatsappMessage: generateWhatsAppMessage(data),
+                        timestamp: new Date().toISOString()
+                    };
+
+                    console.log('📤 Mengirim data ke Google Sheets:', payload);
+
+                    const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors', // Penting untuk Google Apps Script
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    // Karena mode 'no-cors', kita tidak bisa membaca response
+                    // Tapi jika tidak ada error, berarti berhasil
+                    setLastSync(new Date());
+                    showNotification('success', 'Data Tersimpan', 'Data berhasil disinkronkan ke Google Sheets');
+                    
+                    return { success: true };
+
+                } catch (error) {
+                    console.error('❌ Error kirim ke Google Sheets:', error);
+                    
+                    // Simpan ke localStorage sebagai backup
+                    saveToLocalStorage(data);
+                    showNotification('error', 'Gagal Sinkronisasi', 'Data disimpan offline, akan sync otomatis saat online');
+                    
+                    throw error;
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            // ================================
+            // OFFLINE STORAGE BACKUP
+            // ================================
+            const saveToLocalStorage = (data) => {
+                try {
+                    const offlineData = JSON.parse(localStorage.getItem('pltgu_offline_data') || '[]');
+                    const newEntry = {
+                        id: Date.now(),
+                        tab: activeTab,
+                        timestamp: new Date().toISOString(),
+                        data: data,
+                        synced: false
+                    };
+                    
+                    offlineData.push(newEntry);
+                    localStorage.setItem('pltgu_offline_data', JSON.stringify(offlineData));
+                    
+                    setSavedData(prev => [newEntry, ...prev]);
+                } catch (error) {
+                    console.error('Error save to localStorage:', error);
+                }
+            };
+
+            // ================================
+            // AUTO SYNC OFFLINE DATA
+            // ================================
+            const syncOfflineData = async () => {
+                try {
+                    const offlineData = JSON.parse(localStorage.getItem('pltgu_offline_data') || '[]');
+                    const unsyncedData = offlineData.filter(item => !item.synced);
+                    
+                    if (unsyncedData.length === 0) return;
+
+                    console.log(`🔄 Sync ${unsyncedData.length} data offline...`);
+
+                    for (const item of unsyncedData) {
+                        try {
+                            await sendToGoogleSheets(item.data, false);
+                            
+                            // Mark as synced
+                            item.synced = true;
+                        } catch (error) {
+                            console.error('Error sync item:', error);
+                            break; // Stop sync jika ada error
+                        }
+                    }
+
+                    // Update localStorage
+                    localStorage.setItem('pltgu_offline_data', JSON.stringify(offlineData));
+                    showNotification('success', 'Sync Berhasil', `${unsyncedData.length} data offline berhasil disinkronisasi`);
+
+                } catch (error) {
+                    console.error('Error sync offline data:', error);
+                }
+            };
+
+            // Auto sync saat online
+            useEffect(() => {
+                if (isOnline) {
+                    const timer = setTimeout(() => {
+                        syncOfflineData();
+                    }, 2000); // Delay 2 detik setelah online
+
+                    return () => clearTimeout(timer);
+                }
+            }, [isOnline]);
+
+            // ================================
+            // NOTIFICATION SYSTEM
+            // ================================
+            const showNotification = (type, title, message) => {
+                const notification = {
+                    id: Date.now(),
+                    type,
+                    title,
+                    message,
+                    timestamp: new Date()
+                };
+                
+                setNotifications(prev => [notification, ...prev.slice(0, 9)]);
+                
+                // Auto remove setelah 5 detik
+                setTimeout(() => {
+                    setNotifications(prev => prev.filter(n => n.id !== notification.id));
+                }, 5000);
+            };
+
+            // ================================
+            // DATA PROCESSING
+            // ================================
+            const handleInputChange = (field, value) => {
+                setFormData(prev => ({
+                    ...prev,
+                    [field]: value
+                }));
+            };
+
+            const getAlarmStatus = (value, threshold, isReverse = false) => {
+                const num = parseFloat(value);
+                if (isNaN(num) || !value) return 'normal';
+                
+                if (isReverse) {
+                    if (num <= threshold) return 'critical';
+                    return num <= threshold * 1.1 ? 'warning' : 'normal';
+                } else {
+                    if (num >= threshold) return 'critical';
+                    return num >= threshold * 0.9 ? 'warning' : 'normal';
+                }
+            };
+
+            const generateWhatsAppMessage = (data) => {
+                const formatDate = (dateStr) => {
+                    const date = new Date(dateStr);
+                    return date.toLocaleDateString('id-ID', { 
+                        day: '2-digit', 
+                        month: 'short', 
+                        year: 'numeric' 
+                    });
+                };
+
+                const getStatus = (dp) => {
+                    const num = parseFloat(dp);
+                    return (isNaN(num) || num === 0) ? "OFF" : "Operasi";
+                };
+
+                const tag = (val, alarm, isNeg = false) => {
+                    const num = parseFloat(val);
+                    if (isNaN(num) || !val) return "-";
+                    const threshold = alarm * 0.9;
+                    return isNeg ? 
+                        (num <= threshold ? `🔺 ${num}` : `${num}`) : 
+                        (num >= threshold ? `🔺 ${num}` : `${num}`);
+                };
+
+                if (activeTab === 'filter') {
+                    return `🔧 *PENGGANTIAN FILTER PLTGU PRIOK*
+📅 Tanggal: ${formatDate(data.filter_tanggal)}
+🕐 Waktu: ${data.time || formData.time}
+🌀 Unit: ${data.filter_gt}
+📦 Jenis: ${data.filter_type}
+🔢 Jumlah: ${data.filter_jumlah} pcs
+🏷️ Merk: ${data.filter_merk}
+📝 Keterangan: ${data.filter_keterangan}
+
+📱 Via Mobile App - PLTGU Dashboard
+#FilterMaintenance #PLTGU #${data.filter_gt?.replace(/[.\s]/g, '')}`;
+                }
+
+                let message = '';
+                const dateStr = data.date || formData.date;
+                const timeStr = data.time || formData.time;
+
+                if (activeTab === 'blok12') {
+                    message = `📊 *DATA ENTRY BLOK 12 - PLTGU PRIOK*
+📅 Tanggal: ${formatDate(dateStr)}
+🕐 Waktu: ${timeStr}
+📉 Alarm DP: 4.5 inch H₂O
+
+🌀 *GT 1.1*
+• Beban: ${data.gt11_beban || '-'} MW
+• DP: ${tag(data.gt11_dp, 4.5)} inch H₂O
+• Status: ${getStatus(data.gt11_dp)}
+
+🌀 *GT 1.2*
+• Beban: ${data.gt12_beban || '-'} MW
+• DP: ${tag(data.gt12_dp, 4.5)} inch H₂O
+• Status: ${getStatus(data.gt12_dp)}
+
+🌀 *GT 1.3*
+• Beban: ${data.gt13_beban || '-'} MW
+• DP: ${tag(data.gt13_dp, 4.5)} inch H₂O
+• Status: ${getStatus(data.gt13_dp)}
+
+🌀 *GT 2.1*
+• Beban: ${data.gt21_beban || '-'} MW
+• DP: ${tag(data.gt21_dp, 4.5)} inch H₂O
+• Status: ${getStatus(data.gt21_dp)}
+
+🌀 *GT 2.2*
+• Beban: ${data.gt22_beban || '-'} MW
+• DP: ${tag(data.gt22_dp, 4.5)} inch H₂O
+• Status: ${getStatus(data.gt22_dp)}
+
+🌀 *GT 2.3*
+• Beban: ${data.gt23_beban || '-'} MW
+• DP: ${tag(data.gt23_dp, 4.5)} inch H₂O
+• Status: ${getStatus(data.gt23_dp)}
+
+📱 Via Mobile App - PLTGU Dashboard
+⚠️ 🔺 = Mendekati alarm (≥90% batas)
+#DataEntry #Blok12 #PLTGU`;
+                }
+
+                else if (activeTab === 'blok3') {
+                    message = `📊 *DATA ENTRY BLOK 3 - PLTGU PRIOK*
+📅 Tanggal: ${formatDate(dateStr)}
+🕐 Waktu: ${timeStr}
+📉 Alarm DP: 1st=37, 2nd=63, IMS=-205
+
+🌀 *GT 3.1*
+• Beban: ${data.gt31_beban || '-'} MW
+• DP 1st: ${tag(data.gt31_dp1st, 37)}
+• DP 2nd: ${tag(data.gt31_dp2nd, 63)}
+• IMS: ${tag(data.gt31_ims, -205, true)}
+• OH: ${data.gt31_oh || '-'} hari
+• Hari Operasi: ${data.gt31_hari_op_1st || '-'} (1st), ${data.gt31_hari_op_2nd || '-'} (2nd)
+• Status: ${getStatus(data.gt31_dp1st)}
+
+🌀 *GT 3.2*
+• Beban: ${data.gt32_beban || '-'} MW
+• DP 1st: ${tag(data.gt32_dp1st, 37)}
+• DP 2nd: ${tag(data.gt32_dp2nd, 63)}
+• IMS: ${tag(data.gt32_ims, -205, true)}
+• OH: ${data.gt32_oh || '-'} hari
+• Hari Operasi: ${data.gt32_hari_op_1st || '-'} (1st), ${data.gt32_hari_op_2nd || '-'} (2nd)
+• Status: ${getStatus(data.gt32_dp1st)}
+
+📱 Via Mobile App - PLTGU Dashboard
+⚠️ 🔺 = Mendekati alarm (≥90% batas)
+#DataEntry #Blok3 #PLTGU`;
+                }
+
+                else if (activeTab === 'blok4') {
+                    message = `📊 *DATA ENTRY BLOK 4 - PLTGU PRIOK*
+📅 Tanggal: ${formatDate(dateStr)}
+🕐 Waktu: ${timeStr}
+📉 Alarm DP: 1st=2.94, 2nd=6.86, Inlet Air=-11
+
+🌀 *GT 4.1*
+• Beban: ${data.gt41_beban || '-'} MW
+• DP 1st: ${tag(data.gt41_dp1st, 2.94)}
+• DP 2nd: ${tag(data.gt41_dp2nd, 6.86)}
+• OH: ${data.gt41_oh || '-'} hari
+• Hari Operasi: ${data.gt41_hari_op_1st || '-'} (1st), ${data.gt41_hari_op_2nd || '-'} (2nd)
+• Status: ${getStatus(data.gt41_dp1st)}
+
+🌀 *GT 4.2*
+• Beban: ${data.gt42_beban || '-'} MW
+• DP 1st: ${tag(data.gt42_dp1st, 2.94)}
+• DP 2nd: ${tag(data.gt42_dp2nd, 6.86)}
+• OH: ${data.gt42_oh || '-'} hari
+• Hari Operasi: ${data.gt42_hari_op_1st || '-'} (1st), ${data.gt42_hari_op_2nd || '-'} (2nd)
+• Status: ${getStatus(data.gt42_dp1st)}
+
+📱 Via Mobile App - PLTGU Dashboard
+⚠️ 🔺 = Mendekati alarm (≥90% batas)
+#DataEntry #Blok4 #PLTGU`;
+                }
+
+                return message;
+            };
+
+            // ================================
+            // MAIN ACTIONS
+            // ================================
+            const saveData = async () => {
+                try {
+                    // Validasi data required
+                    if (activeTab === 'filter') {
+                        if (!formData.filter_gt || !formData.filter_type || !formData.filter_jumlah) {
+                            showNotification('error', 'Data Tidak Lengkap', 'Mohon isi semua field yang required');
+                            return;
+                        }
+                    }
+
+                    // Kirim ke Google Sheets
+                    await sendToGoogleSheets(formData, false);
+                    
+                    // Reset form setelah sukses
+                    resetForm();
+                    
+                } catch (error) {
+                    console.error('Save error:', error);
+                    // Error handling sudah ada di sendToGoogleSheets
+                }
+            };
+
+            const saveAndShare = async () => {
+                try {
+                    // Validasi data required
+                    if (activeTab === 'filter') {
+                        if (!formData.filter_gt || !formData.filter_type || !formData.filter_jumlah) {
+                            showNotification('error', 'Data Tidak Lengkap', 'Mohon isi semua field yang required');
+                            return;
+                        }
+                    }
+
+                    // Kirim ke Google Sheets dan WhatsApp
+                    await sendToGoogleSheets(formData, true);
+                    
+                    // Juga buka WhatsApp manual sebagai backup
+                    const message = generateWhatsAppMessage(formData);
+                    const encodedMessage = encodeURIComponent(message);
+                    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+                    window.open(whatsappUrl, '_blank');
+                    
+                    // Reset form setelah sukses
+                    resetForm();
+                    
+                } catch (error) {
+                    // Jika Google Sheets gagal, tetap buka WhatsApp
+                    const message = generateWhatsAppMessage(formData);
+                    const encodedMessage = encodeURIComponent(message);
+                    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+                    window.open(whatsappUrl, '_blank');
+                }
+            };
+
+            const resetForm = () => {
+                const resetData = {
+                    date: new Date().toISOString().split('T')[0],
+                    time: new Date().toTimeString().split(' ')[0].slice(0, 5),
+                };
+                
+                Object.keys(formData).forEach(key => {
+                    if (key.includes('gt') || key.includes('filter')) {
+                        if (key === 'filter_tanggal') {
+                            resetData[key] = new Date().toISOString().split('T')[0];
+                        } else {
+                            resetData[key] = '';
+                        }
+                    } else {
+                        resetData[key] = formData[key];
+                    }
+                });
+                
+                setFormData(resetData);
+            };
+
+            // ================================
+            // LOAD OFFLINE DATA
+            // ================================
+            useEffect(() => {
+                try {
+                    const offlineData = JSON.parse(localStorage.getItem('pltgu_offline_data') || '[]');
+                    setSavedData(offlineData);
+                    
+                    // Generate mock chart data
+                    const generateChartData = () => {
+                        const data = [];
+                        const today = new Date();
+                        for (let i = 6; i >= 0; i--) {
+                            const date = new Date(today);
+                            date.setDate(date.getDate() - i);
+                            data.push({
+                                date: date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }),
+                                blok12: Math.random() * 5 + 2,
+                                blok3_1st: Math.random() * 40 + 20,
+                                blok3_2nd: Math.random() * 70 + 30,
+                                blok4_1st: Math.random() * 3 + 1,
+                                blok4_2nd: Math.random() * 7 + 3,
+                                efficiency: Math.random() * 20 + 75
+                            });
+                        }
+                        setChartData(data);
+                    };
+                    generateChartData();
+                } catch (error) {
+                    console.error('Error loading offline data:', error);
+                }
+            }, []);
+
+            // ================================
+            // UI COMPONENTS
+            // ================================
+            const ConnectionStatus = () => (
+                <div className="flex items-center space-x-2">
+                    {isOnline ? (
+                        <>
+                            <Wifi size={16} className="text-green-500" />
+                            <span className="text-xs text-green-600">Online</span>
+                        </>
+                    ) : (
+                        <>
+                            <WifiOff size={16} className="text-red-500" />
+                            <span className="text-xs text-red-600">Offline</span>
+                        </>
+                    )}
+                    {lastSync && (
+                        <span className="text-xs text-gray-500">
+                            Sync: {lastSync.toLocaleTimeString('id-ID')}
+                        </span>
+                    )}
+                </div>
+            );
+
+            const LoadingButton = ({ onClick, loading, children, className, disabled }) => (
+                <button
+                    onClick={onClick}
+                    disabled={disabled || loading}
+                    className={`${className} flex items-center justify-center space-x-2 disabled:opacity-50`}
+                >
+                    {loading && <div className="loading-spinner"></div>}
+                    {children}
+                </button>
+            );
+
+            const InputField = ({ label, value, onChange, type = "text", placeholder, alarm, unit, required = false }) => {
+                const alarmStatus = alarm ? getAlarmStatus(value, alarm.threshold, alarm.reverse) : 'normal';
+                
+                return (
+                    <div className="space-y-2">
+                        <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            {label} {required && <span className="text-red-500">*</span>}
+                            {unit && <span className={`text-xs ml-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>({unit})</span>}
+                        </label>
+                        <div className="relative">
+                            <input
+                                type={type}
+                                value={value}
+                                onChange={(e) => onChange(e.target.value)}
+                                placeholder={placeholder}
+                                className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                                    alarmStatus === 'critical' 
+                                        ? 'border-red-400 bg-red-50 dark:bg-red-900/20' 
+                                        : alarmStatus === 'warning' 
+                                        ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20'
+                                        : isDarkMode 
+                                        ? 'border-gray-600 bg-gray-700 text-white' 
+                                        : 'border-gray-300 bg-white'
+                                }`}
+                            />
+                            {alarmStatus !== 'normal' && (
+                                <AlertTriangle size={16} className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
+                                    alarmStatus === 'critical' ? 'text-red-500' : 'text-yellow-500'
+                                } animate-pulse`} />
+                            )}
+                        </div>
+                        {alarm && alarmStatus !== 'normal' && (
+                            <p className={`text-xs ${alarmStatus === 'critical' ? 'text-red-600' : 'text-yellow-600'}`}>
+                                ⚠️ {alarmStatus === 'critical' ? 'ALARM AKTIF' : 'Mendekati alarm'}: {alarm.threshold} {unit}
+                            </p>
+                        )}
+                    </div>
+                );
+            };
+
+            // ================================
+            // DASHBOARD COMPONENT
+            // ================================
+            const DashboardView = () => {
+                const unsyncedCount = savedData.filter(item => !item.synced).length;
+                
+                return (
+                    <div className="space-y-6">
+                        {/* Status Cards */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-4 rounded-xl shadow-lg`}>
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="text-2xl font-bold text-blue-600">10</div>
+                                    <Zap size={20} className="text-blue-500" />
+                                </div>
+                                <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Total GT Units</div>
+                            </div>
+                            
+                            <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-4 rounded-xl shadow-lg`}>
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="text-2xl font-bold text-green-600">{savedData.length}</div>
+                                    <Database size={20} className="text-green-500" />
+                                </div>
+                                <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Data Records</div>
+                            </div>
+                            
+                            <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-4 rounded-xl shadow-lg ${!isOnline ? 'border-red-200' : ''}`}>
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className={`text-2xl font-bold ${isOnline ? 'text-green-600' : 'text-red-600'}`}>
+                                        {isOnline ? '●' : '●'}
+                                    </div>
+                                    {isOnline ? <Wifi size={20} className="text-green-500" /> : <WifiOff size={20} className="text-red-500" />}
+                                </div>
+                                <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                    {isOnline ? 'Online' : 'Offline'}
+                                </div>
+                            </div>
+                            
+                            <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-4 rounded-xl shadow-lg ${unsyncedCount > 0 ? 'border-orange-200' : ''}`}>
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className={`text-2xl font-bold ${unsyncedCount > 0 ? 'text-orange-600' : 'text-gray-400'}`}>
+                                        {unsyncedCount}
+                                    </div>
+                                    <CloudUpload size={20} className={unsyncedCount > 0 ? 'text-orange-500' : 'text-gray-400'} />
+                                </div>
+                                <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Pending Sync</div>
+                            </div>
+                        </div>
+
+                        {/* Quick Actions */}
+                        <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-4 rounded-xl shadow-lg`}>
+                            <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Quick Actions</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => setActiveTab('blok12')}
+                                    className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
+                                >
+                                    📊 Entry Blok 12
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('blok3')}
+                                    className="p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all"
+                                >
+                                    📊 Entry Blok 3
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('blok4')}
+                                    className="p-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all"
+                                >
+                                    📊 Entry Blok 4
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('filter')}
+                                    className="p-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-all"
+                                >
+                                    🔧 Ganti Filter
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* System Status */}
+                        <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-4 rounded-xl shadow-lg`}>
+                            <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>System Status</h3>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                    <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Connection</span>
+                                    <ConnectionStatus />
+                                </div>
+                                
+                                {lastSync && (
+                                    <div className="flex justify-between items-center">
+                                        <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Last Sync</span<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLTGU Priok - Control Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Recharts -->
+    <script src="https://unpkg.com/recharts@2.8.0/umd/Recharts.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Babel untuk transpile JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slideIn { animation: slideIn 0.3s ease-out; }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(0.33); }
+            40%, 50% { opacity: 1; }
+            100% { opacity: 0; transform: scale(1.33); }
+        }
+        .animate-pulse-ring { animation: pulse-ring 1.5s ease-out infinite; }
+        
+        .loading-spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .dark ::-webkit-scrollbar-track { background: #374151; }
+        .dark ::-webkit-scrollbar-thumb { background: #6b7280; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Cell, Area, AreaChart } = Recharts;
+        
+        // ================================
+        // KONFIGURASI GOOGLE APPS SCRIPT
+        // ================================
+        const CONFIG = {
+            // URL DEPLOY GOOGLE APPS SCRIPT - SUDAH TERKONFIGURASI
+            GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyWNfbyxKMYygRN0u7yS44v7nLG17lsErfmnvuFkv6v9LXwsVJp3gmP2dxavir2hWud/exec',
+            
+            // Konfigurasi WhatsApp (opsional - bisa pakai langsung wa.me)
+            WHATSAPP_ENABLED: true
+        };
+        
+        // Import icons dari Lucide
+        const Calendar = () => React.createElement(lucide.Calendar);
+        const Share2 = () => React.createElement(lucide.Share2);
+        const Filter = () => React.createElement(lucide.Filter);
+        const Database = () => React.createElement(lucide.Database);
+        const Plus = () => React.createElement(lucide.Plus);
+        const Zap = () => React.createElement(lucide.Zap);
+        const AlertTriangle = () => React.createElement(lucide.AlertTriangle);
+        const CheckCircle = () => React.createElement(lucide.CheckCircle);
+        const Clock = () => React.createElement(lucide.Clock);
+        const Bell = () => React.createElement(lucide.Bell);
+        const TrendingUp = () => React.createElement(lucide.TrendingUp);
+        const Activity = () => React.createElement(lucide.Activity);
+        const BarChart3 = () => React.createElement(lucide.BarChart3);
+        const Gauge = () => React.createElement(lucide.Gauge);
+        const Wifi = () => React.createElement(lucide.Wifi);
+        const WifiOff = () => React.createElement(lucide.WifiOff);
+        const CloudUpload = () => React.createElement(lucide.CloudUpload);
+
+        const DataEntryApp = () => {
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [notifications, setNotifications] = useState([]);
+            const [isDarkMode, setIsDarkMode] = useState(false);
+            const [isLoading, setIsLoading] = useState(false);
+            const [isOnline, setIsOnline] = useState(navigator.onLine);
+            const [lastSync, setLastSync] = useState(null);
+            
+            const [formData, setFormData] = useState({
+                // Common fields
+                date: new Date().toISOString().split('T')[0],
+                time: new Date().toTimeString().split(' ')[0].slice(0, 5),
+                
+                // Blok 12 fields
+                gt11_beban: '', gt11_
