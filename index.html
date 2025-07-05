@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLTGU Priok Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        .loading { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        const CONFIG = {
+            GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyWNfbyxKMYygRN0u7yS44v7nLG17lsErfmnvuFkv6v9LXwsVJp3gmP2dxavir2hWud/exec'
+        };
+
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [isLoading, setIsLoading] = useState(false);
+            const [isOnline, setIsOnline] = useState(navigator.onLine);
+            const [notifications, setNotifications] = useState([]);
+            const [savedData, setSavedData] = useState([]);
+            const [formData, setFormData] = useState({
+                date: new Date().toISOString().split('T')[0],
+                time: new Date().toTimeString().split(' ')[0].slice(0, 5),
+                gt11_beban: '', gt11_dp: '', gt12_beban: '', gt12_dp: '', gt13_beban: '', gt13_dp: '',
+                gt21_beban: '', gt21_dp: '', gt22_beban: '', gt22_dp: '', gt23_beban: '', gt23_dp: '',
+                gt31_beban: '', gt31_dp1st: '', gt31_dp2nd: '', gt31_ims: '', gt31_oh: '',
+                gt32_beban: '', gt32_dp1st: '', gt32_dp2nd: '', gt32_ims: '', gt32_oh: '',
+                gt41_beban: '', gt41_dp1st: '', gt41_dp2nd: '', gt41_oh: '',
+                gt42_beban: '', gt42_dp1st: '', gt42_dp2nd: '', gt42_oh: '',
+                filter_gt: '', filter_type: '', filter_tanggal: new Date().toISOString().split('T')[0],
+                filter_jumlah: '', filter_merk: '', filter_keterangan: ''
+            });
+
+            useEffect(() => {
+                const handleOnline = () => setIsOnline(true);
+                const handleOffline = () => setIsOnline(false);
+                window.addEventListener('online', handleOnline);
+                window.addEventListener('offline', handleOffline);
+                return () => {
+                    window.removeEventListener('online', handleOnline);
+                    window.removeEventListener('offline', handleOffline);
+                };
+            }, []);
+
+            const showNotification = (type, title, message) => {
+                const notification = { id: Date.now(), type, title, message, timestamp: new Date() };
+                setNotifications(prev => [notification, ...prev.slice(0, 4)]);
+                setTimeout(() => {
+                    setNotifications(prev => prev.filter(n => n.id !== notification.id));
+                }, 5000);
+            };
+
+            const handleInputChange = (field, value) => {
+                setFormData(prev => ({ ...prev, [field]: value }));
+            };
+
+            const sendToGoogleSheets = async (data, sendWA = false) => {
+                setIsLoading(true);
+                try {
+                    if (!isOnline) throw new Error('Tidak ada koneksi internet');
+                    
+                    const payload = {
+                        tab: activeTab,
+                        formData: data,
+                        sendWhatsApp: sendWA,
+                        whatsappMessage: generateWhatsAppMessage(data),
+                        timestamp: new Date().toISOString()
+                    };
+
+                    await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    showNotification('success', 'Data Tersimpan', 'Data berhasil disinkronkan ke Google Sheets');
+                    return { success: true };
+                } catch (error) {
+                    console.error('Error:', error);
+                    saveToLocalStorage(data);
+                    showNotification('error', 'Gagal Sinkronisasi', 'Data disimpan offline');
+                    throw error;
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            const saveToLocalStorage = (data) => {
+                try {
+                    const offlineData = JSON.parse(localStorage.getItem('pltgu_offline_data') || '[]');
+                    const newEntry = {
+                        id: Date.now(),
+                        tab: activeTab,
+                        timestamp: new Date().toISOString(),
+                        data: data,
+                        synced: false
+                    };
+                    offlineData.push(newEntry);
+                    localStorage.setItem('pltgu_offline_data', JSON.stringify(offlineData));
+                    setSavedData(prev => [newEntry, ...prev]);
+                } catch (error) {
+                    console.error('Error save to localStorage:', error);
+                }
+            };
+
+            const generateWhatsAppMessage = (data) => {
+                const formatDate = (dateStr) => {
+                    return new Date(dateStr).toLocaleDateString('id-ID', { 
+                        day: '2-digit', month: 'short', year: 'numeric' 
+                    });
+                };
+
+                const getStatus = (dp) => {
+                    const num = parseFloat(dp);
+                    return (isNaN(num) || num === 0) ? "OFF" : "Operasi";
+                };
+
+                if (activeTab === 'filter') {
+                    return `🔧 *PENGGANTIAN FILTER PLTGU PRIOK*
+📅 Tanggal: ${formatDate(data.filter_tanggal)}
+🌀 Unit: ${data.filter_gt}
+📦 Jenis: ${data.filter_type}
+🔢 Jumlah: ${data.filter_jumlah} pcs
+🏷️ Merk: ${data.filter_merk}
+📝 Keterangan: ${data.filter_keterangan}
+
+📱 Via Mobile App - PLTGU Dashboard
+#FilterMaintenance #PLTGU`;
+                }
+
+                if (activeTab === 'blok12') {
+                    return `📊 *DATA ENTRY BLOK 12 - PLTGU PRIOK*
+📅 Tanggal: ${formatDate(data.date)}
+🕐 Waktu: ${data.time}
+
+🌀 *GT 1.1* - Beban: ${data.gt11_beban}MW, DP: ${data.gt11_dp} inch H₂O, Status: ${getStatus(data.gt11_dp)}
+🌀 *GT 1.2* - Beban: ${data.gt12_beban}MW, DP: ${data.gt12_dp} inch H₂O, Status: ${getStatus(data.gt12_dp)}
+🌀 *GT 1.3* - Beban: ${data.gt13_beban}MW, DP: ${data.gt13_dp} inch H₂O, Status: ${getStatus(data.gt13_dp)}
+🌀 *GT 2.1* - Beban: ${data.gt21_beban}MW, DP: ${data.gt21_dp} inch H₂O, Status: ${getStatus(data.gt21_dp)}
+🌀 *GT 2.2* - Beban: ${data.gt22_beban}MW, DP: ${data.gt22_dp} inch H₂O, Status: ${getStatus(data.gt22_dp)}
+🌀 *GT 2.3* - Beban: ${data.gt23_beban}MW, DP: ${data.gt23_dp} inch H₂O, Status: ${getStatus(data.gt23_dp)}
+
+📱 Via Mobile App - PLTGU Dashboard
+#DataEntry #Blok12 #PLTGU`;
+                }
+
+                if (activeTab === 'blok3') {
+                    return `📊 *DATA ENTRY BLOK 3 - PLTGU PRIOK*
+📅 Tanggal: ${formatDate(data.date)}
+🕐 Waktu: ${data.time}
+
+🌀 *GT 3.1* - Beban: ${data.gt31_beban}MW, DP 1st: ${data.gt31_dp1st}, DP 2nd: ${data.gt31_dp2nd}, IMS: ${data.gt31_ims}, OH: ${data.gt31_oh}
+🌀 *GT 3.2* - Beban: ${data.gt32_beban}MW, DP 1st: ${data.gt32_dp1st}, DP 2nd: ${data.gt32_dp2nd}, IMS: ${data.gt32_ims}, OH: ${data.gt32_oh}
+
+📱 Via Mobile App - PLTGU Dashboard
+#DataEntry #Blok3 #PLTGU`;
+                }
+
+                if (activeTab === 'blok4') {
+                    return `📊 *DATA ENTRY BLOK 4 - PLTGU PRIOK*
+📅 Tanggal: ${formatDate(data.date)}
+🕐 Waktu: ${data.time}
+
+🌀 *GT 4.1* - Beban: ${data.gt41_beban}MW, DP 1st: ${data.gt41_dp1st}, DP 2nd: ${data.gt41_dp2nd}, OH: ${data.gt41_oh}
+🌀 *GT 4.2* - Beban: ${data.gt42_beban}MW, DP 1st: ${data.gt42_dp1st}, DP 2nd: ${data.gt42_dp2nd}, OH: ${data.gt42_oh}
+
+📱 Via Mobile App - PLTGU Dashboard
+#DataEntry #Blok4 #PLTGU`;
+                }
+
+                return '';
+            };
+
+            const saveData = async () => {
+                try {
+                    if (activeTab === 'filter' && (!formData.filter_gt || !formData.filter_type || !formData.filter_jumlah)) {
+                        showNotification('error', 'Data Tidak Lengkap', 'Mohon isi semua field yang required');
+                        return;
+                    }
+                    await sendToGoogleSheets(formData, false);
+                    resetForm();
+                } catch (error) {
+                    console.error('Save error:', error);
+                }
+            };
+
+            const saveAndShare = async () => {
+                try {
+                    if (activeTab === 'filter' && (!formData.filter_gt || !formData.filter_type || !formData.filter_jumlah)) {
+                        showNotification('error', 'Data Tidak Lengkap', 'Mohon isi semua field yang required');
+                        return;
+                    }
+                    await sendToGoogleSheets(formData, true);
+                    const message = generateWhatsAppMessage(formData);
+                    const encodedMessage = encodeURIComponent(message);
+                    window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+                    resetForm();
+                } catch (error) {
+                    const message = generateWhatsAppMessage(formData);
+                    const encodedMessage = encodeURIComponent(message);
+                    window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+                }
+            };
+
+            const resetForm = () => {
+                setFormData({
+                    date: new Date().toISOString().split('T')[0],
+                    time: new Date().toTimeString().split(' ')[0].slice(0, 5),
+                    gt11_beban: '', gt11_dp: '', gt12_beban: '', gt12_dp: '', gt13_beban: '', gt13_dp: '',
+                    gt21_beban: '', gt21_dp: '', gt22_beban: '', gt22_dp: '', gt23_beban: '', gt23_dp: '',
+                    gt31_beban: '', gt31_dp1st: '', gt31_dp2nd: '', gt31_ims: '', gt31_oh: '',
+                    gt32_beban: '', gt32_dp1st: '', gt32_dp2nd: '', gt32_ims: '', gt32_oh: '',
+                    gt41_beban: '', gt41_dp1st: '', gt41_dp2nd: '', gt41_oh: '',
+                    gt42_beban: '', gt42_dp1st: '', gt42_dp2nd: '', gt42_oh: '',
+                    filter_gt: '', filter_type: '', filter_tanggal: new Date().toISOString().split('T')[0],
+                    filter_jumlah: '', filter_merk: '', filter_keterangan: ''
+                });
+            };
+
+            useEffect(() => {
+                try {
+                    const offlineData = JSON.parse(localStorage.getItem('pltgu_offline_data') || '[]');
+                    setSavedData(offlineData);
+                } catch (error) {
+                    console.error('Error loading offline data:', error);
+                }
+            }, []);
+
+            const Dashboard = () => (
+                <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white p-4 rounded-xl shadow-lg">
+                            <div className="text-2xl font-bold text-blue-600">10</div>
+                            <div className="text-sm text-gray-600">Total GT Units</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl shadow-lg">
+                            <div className="text-2xl font-bold text-green-600">{savedData.length}</div>
+                            <div className="text-sm text-gray-600">Data Records</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl shadow-lg">
+                            <div className={`text-2xl font-bold ${isOnline ? 'text-green-600' : 'text-red-600'}`}>
+                                {isOnline ? '●' : '●'}
+                            </div>
+                            <div className="text-sm text-gray-600">{isOnline ? 'Online' : 'Offline'}</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl shadow-lg">
+                            <div className="text-2xl font-bold text-blue-600">v1.0</div>
+                            <div className="text-sm text-gray-600">App Version</div>
+                        </div>
+                    </div>
+                    <div className="bg-white p-4 rounded-xl shadow-lg">
+                        <h3 className="text-lg font-bold mb-4">Quick Actions</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button onClick={() => setActiveTab('blok12')} className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600">📊 Entry Blok 12</button>
+                            <button onClick={() => setActiveTab('blok3')} className="p-3 bg-green-500 text-white rounded-lg hover:bg-green-600">📊 Entry Blok 3</button>
+                            <button onClick={() => setActiveTab('blok4')} className="p-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600">📊 Entry Blok 4</button>
+                            <button onClick={() => setActiveTab('filter')} className="p-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600">🔧 Ganti Filter</button>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const InputField = ({ label, value, onChange, type = "text", placeholder, required = false }) => (
+                <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                        {label} {required && <span className="text-red-500">*</span>}
+                    </label>
+                    <input
+                        type={type}
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                        placeholder={placeholder}
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+            );
+
+            const renderBlok12Form = () => (
+                <div className="space-y-4">
+                    <div className="bg-blue-50 p-4 rounded-xl">
+                        <h3 className="font-semibold text-blue-800">📉 Alarm DP: 4.5 inch H₂O</h3>
+                    </div>
+                    {[
+                        { id: 'gt11', name: 'GT 1.1' }, { id: 'gt12', name: 'GT 1.2' }, { id: 'gt13', name: 'GT 1.3' },
+                        { id: 'gt21', name: 'GT 2.1' }, { id: 'gt22', name: 'GT 2.2' }, { id: 'gt23', name: 'GT 2.3' }
+                    ].map((gt) => (
+                        <div key={gt.id} className="bg-gray-50 p-4 rounded-xl">
+                            <h4 className="font-medium mb-3">{gt.name}</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                <InputField
+                                    label="Beban (MW)"
+                                    value={formData[`${gt.id}_beban`]}
+                                    onChange={(val) => handleInputChange(`${gt.id}_beban`, val)}
+                                    type="number"
+                                    required
+                                />
+                                <InputField
+                                    label="DP (inch H₂O)"
+                                    value={formData[`${gt.id}_dp`]}
+                                    onChange={(val) => handleInputChange(`${gt.id}_dp`, val)}
+                                    type="number"
+                                    required
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+
+            const renderBlok3Form = () => (
+                <div className="space-y-4">
+                    <div className="bg-green-50 p-4 rounded-xl">
+                        <h3 className="font-semibold text-green-800">📉 Alarm DP: 1st=37, 2nd=63, IMS=-205</h3>
+                    </div>
+                    {[{ id: 'gt31', name: 'GT 3.1' }, { id: 'gt32', name: 'GT 3.2' }].map((gt) => (
+                        <div key={gt.id} className="bg-gray-50 p-4 rounded-xl">
+                            <h4 className="font-medium mb-3">{gt.name}</h4>
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <InputField label="Beban (MW)" value={formData[`${gt.id}_beban`]} onChange={(val) => handleInputChange(`${gt.id}_beban`, val)} type="number" required />
+                                    <InputField label="OH (hari)" value={formData[`${gt.id}_oh`]} onChange={(val) => handleInputChange(`${gt.id}_oh`, val)} type="number" />
+                                </div>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <InputField label="DP 1st" value={formData[`${gt.id}_dp1st`]} onChange={(val) => handleInputChange(`${gt.id}_dp1st`, val)} type="number" required />
+                                    <InputField label="DP 2nd" value={formData[`${gt.id}_dp2nd`]} onChange={(val) => handleInputChange(`${gt.id}_dp2nd`, val)} type="number" required />
+                                    <InputField label="IMS" value={formData[`${gt.id}_ims`]} onChange={(val) => handleInputChange(`${gt.id}_ims`, val)} type="number" required />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+
+            const renderBlok4Form = () => (
+                <div className="space-y-4">
+                    <div className="bg-orange-50 p-4 rounded-xl">
+                        <h3 className="font-semibold text-orange-800">📉 Alarm DP: 1st=2.94, 2nd=6.86</h3>
+                    </div>
+                    {[{ id: 'gt41', name: 'GT 4.1' }, { id: 'gt42', name: 'GT 4.2' }].map((gt) => (
+                        <div key={gt.id} className="bg-gray-50 p-4 rounded-xl">
+                            <h4 className="font-medium mb-3">{gt.name}</h4>
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <InputField label="Beban (MW)" value={formData[`${gt.id}_beban`]} onChange={(val) => handleInputChange(`${gt.id}_beban`, val)} type="number" required />
+                                    <InputField label="OH (hari)" value={formData[`${gt.id}_oh`]} onChange={(val) => handleInputChange(`${gt.id}_oh`, val)} type="number" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <InputField label="DP 1st" value={formData[`${gt.id}_dp1st`]} onChange={(val) => handleInputChange(`${gt.id}_dp1st`, val)} type="number" required />
+                                    <InputField label="DP 2nd" value={formData[`${gt.id}_dp2nd`]} onChange={(val) => handleInputChange(`${gt.id}_dp2nd`, val)} type="number" required />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+
+            const renderFilterForm = () => (
+                <div className="space-y-4">
+                    <div className="bg-purple-50 p-4 rounded-xl">
+                        <h3 className="font-semibold text-purple-800">🔧 Data Penggantian Filter</h3>
+                    </div>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Unit GT *</label>
+                            <select
+                                value={formData.filter_gt}
+                                onChange={(e) => handleInputChange('filter_gt', e.target.value)}
+                                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                                required
+                            >
+                                <option value="">Pilih Unit GT</option>
+                                <option value="GT 3.1">GT 3.1</option>
+                                <option value="GT 3.2">GT 3.2</option>
+                                <option value="GT 4.1">GT 4.1</option>
+                                <option value="GT 4.2">GT 4.2</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Jenis Filter *</label>
+                            <select
+                                value={formData.filter_type}
+                                onChange={(e) => handleInputChange('filter_type', e.target.value)}
+                                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                                required
+                            >
+                                <option value="">Pilih Jenis Filter</option>
+                                <option value="Pre Filter">Pre Filter</option>
+                                <option value="Final Filter">Final Filter</option>
+                            </select>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <InputField label="Jumlah (pcs)" value={formData.filter_jumlah} onChange={(val) => handleInputChange('filter_jumlah', val)} type="number" required />
+                            <InputField label="Merk Filter" value={formData.filter_merk} onChange={(val) => handleInputChange('filter_merk', val)} placeholder="MIKROPOR" required />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                            <textarea
+                                value={formData.filter_keterangan}
+                                onChange={(e) => handleInputChange('filter_keterangan', e.target.value)}
+                                placeholder="Keterangan tambahan (opsional)"
+                                rows={3}
+                                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+                    <div className="max-w-md mx-auto">
+                        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+                            {/* Header */}
+                            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h1 className="text-xl font-bold">PLTGU Priok</h1>
+                                        <p className="text-blue-100 text-sm">Control Dashboard</p>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        {isOnline ? (
+                                            <>
+                                                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                                                <span className="text-xs">Online</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+                                                <span className="text-xs">Offline</span>
+                                            </>
+                                        )}
+                                        {isLoading && <div className="loading"></div>}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Tab Navigation */}
+                            <div className="p-4 border-b border-gray-200">
+                                <div className="grid grid-cols-5 gap-2">
+                                    {[
+                                        { id: 'dashboard', label: 'Dashboard' },
+                                        { id: 'blok12', label: 'Blok 12' },
+                                        { id: 'blok4', label: 'Blok 4' },
+                                        { id: 'filter', label: 'Filter' }
+                                    ].map(tab => (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className={`p-3 rounded-xl font-medium text-xs ${
+                                                activeTab === tab.id
+                                                    ? 'bg-blue-500 text-white'
+                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            }`}
+                                        >
+                                            {tab.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Date & Time Header */}
+                            {activeTab !== 'dashboard' && (
+                                <div className="p-4 border-b border-gray-200 bg-gray-50">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">📅 Tanggal</label>
+                                            <input
+                                                type="date"
+                                                value={activeTab === 'filter' ? formData.filter_tanggal : formData.date}
+                                                onChange={(e) => 
+                                                    activeTab === 'filter' 
+                                                        ? handleInputChange('filter_tanggal', e.target.value)
+                                                        : handleInputChange('date', e.target.value)
+                                                }
+                                                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">🕐 Waktu</label>
+                                            <input
+                                                type="time"
+                                                value={formData.time}
+                                                onChange={(e) => handleInputChange('time', e.target.value)}
+                                                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Form Content */}
+                            <div className="p-6 max-h-96 overflow-y-auto">
+                                {activeTab === 'dashboard' && <Dashboard />}
+                                {activeTab === 'blok12' && renderBlok12Form()}
+                                {activeTab === 'blok3' && renderBlok3Form()}
+                                {activeTab === 'blok4' && renderBlok4Form()}
+                                {activeTab === 'filter' && renderFilterForm()}
+                            </div>
+
+                            {/* Action Buttons */}
+                            {activeTab !== 'dashboard' && (
+                                <div className="p-6 border-t border-gray-200 space-y-3">
+                                    <button
+                                        onClick={saveData}
+                                        disabled={isLoading}
+                                        className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-xl transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                                    >
+                                        {isLoading && <div className="loading"></div>}
+                                        <span>💾 {isOnline ? 'Simpan ke Google Sheets' : 'Simpan Offline'}</span>
+                                    </button>
+                                    
+                                    <button
+                                        onClick={saveAndShare}
+                                        disabled={isLoading}
+                                        className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-xl transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                                    >
+                                        {isLoading && <div className="loading"></div>}
+                                        <span>📱 Simpan & Share WhatsApp</span>
+                                    </button>
+                                    
+                                    {!isOnline && (
+                                        <div className="text-center">
+                                            <p className="text-xs text-orange-600">
+                                                📶 Mode Offline - Data akan sync otomatis saat online
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Notifications */}
+                            {notifications.length > 0 && (
+                                <div className="fixed top-4 right-4 z-50 space-y-2">
+                                    {notifications.slice(0, 3).map((notif) => (
+                                        <div
+                                            key={notif.id}
+                                            className={`p-4 rounded-xl shadow-2xl max-w-sm ${
+                                                notif.type === 'success' 
+                                                    ? 'bg-green-500 text-white'
+                                                    : notif.type === 'error'
+                                                    ? 'bg-red-500 text-white'
+                                                    : 'bg-yellow-500 text-white'
+                                            }`}
+                                            style={{
+                                                animation: 'slideIn 0.3s ease-out'
+                                            }}
+                                        >
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                    <div className="font-semibold text-sm">{notif.title}</div>
+                                                    <div className="text-sm opacity-90">{notif.message}</div>
+                                                </div>
+                                                <button
+                                                    onClick={() => setNotifications(prev => prev.filter(n => n.id !== notif.id))}
+                                                    className="text-white/80 hover:text-white ml-2"
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
